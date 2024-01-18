@@ -43,6 +43,7 @@ test/*
 !test/*.c
 !test/*.h
 !test/script
+!test/build_nachos.sh
 
 # threads
 threads/*
