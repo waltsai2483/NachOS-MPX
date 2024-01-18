@@ -164,6 +164,12 @@ matmult: matmult.o start.o
 	$(LD) $(LDFLAGS) start.o matmult.o -o matmult.coff
 	$(COFF2NOFF) matmult.coff matmult
 
+createFile.o: createFile.c
+	$(CC) $(CFLAGS) -c createFile.c
+createFile: createFile.o start.o
+	$(LD) $(LDFLAGS) start.o createFile.o -o createFile.coff
+	$(COFF2NOFF) createFile.coff createFile
+
 consoleIO_test1.o: consoleIO_test1.c
 	$(CC) $(CFLAGS) -c consoleIO_test1.c
 consoleIO_test1: consoleIO_test1.o start.o
@@ -194,13 +200,23 @@ fileIO_test2: fileIO_test2.o start.o
 	$(LD) $(LDFLAGS) start.o fileIO_test2.o -o fileIO_test2.coff
 	$(COFF2NOFF) fileIO_test2.coff fileIO_test2
 
+hw3t1.o: hw3t1.c
+	$(CC) $(CFLAGS) -c hw3t1.c
+hw3t1: hw3t1.o start.o
+	$(LD) $(LDFLAGS) start.o hw3t1.o -o hw3t1.coff
+	$(COFF2NOFF) hw3t1.coff hw3t1
 
-createFile.o: createFile.c
-	$(CC) $(CFLAGS) -c createFile.c
-createFile: createFile.o start.o
-	$(LD) $(LDFLAGS) start.o createFile.o -o createFile.coff
-	$(COFF2NOFF) createFile.coff createFile
+hw3t2.o: hw3t2.c
+	$(CC) $(CFLAGS) -c hw3t2.c
+hw3t2: hw3t2.o start.o
+	$(LD) $(LDFLAGS) start.o hw3t2.o -o hw3t2.coff
+	$(COFF2NOFF) hw3t2.coff hw3t2
 
+hw3t3.o: hw3t3.c
+	$(CC) $(CFLAGS) -c hw3t3.c
+hw3t3: hw3t3.o start.o
+	$(LD) $(LDFLAGS) start.o hw3t3.o -o hw3t3.coff
+	$(COFF2NOFF) hw3t3.coff hw3t3
 
 clean:
 	$(RM) -f *.o *.ii
