@@ -10,3 +10,5 @@ else
     echo "Build failed"
     exit 1
 fi
+rm -rf nachos.bin
+cp nachos nachos.bin
