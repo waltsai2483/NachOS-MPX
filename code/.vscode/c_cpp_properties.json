@@ -13,7 +13,7 @@
                 "${workspaceRoot}/threads",
                 "${workspaceRoot}/userprog"
             ],
-            "compilerPath": "/usr/bin/gcc",
+            "compilerPath": "/usr/bin/g++",
             "defines": [
                 "FILESYS_STUB",
                 "RDATA",

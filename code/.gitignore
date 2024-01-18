@@ -3,6 +3,7 @@ DISK_0
 
 .vscode/*
 !.vscode/c_cpp_properties.json
+!.vscode/settings.json
 
 *.o
 
