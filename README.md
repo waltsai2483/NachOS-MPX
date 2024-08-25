@@ -17,8 +17,8 @@ cd NachOS-4.0_MP1
 docker run --rm -v $(PWD):/nachos -it nachos
 $ cd code/test
 # Build nachos
-$ bash build_nachos.sh
+$ bash build_nachos_docker.sh
 # Build tests
 $ make clean; make <test>
-$ ../build.linux/nachos -e <test>
+$ ../build.linux/nachos.bin -e <test>
 ```
