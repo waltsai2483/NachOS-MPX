@@ -16,6 +16,6 @@ RUN ln -s /usr/bin/g++44 /usr/bin/g++
 # Install oh-my-bash for a better shell experience
 RUN bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
 
-WORKDIR /nachos
+WORKDIR /nachos/code/test
 
 ENTRYPOINT [ "/bin/bash" ]
