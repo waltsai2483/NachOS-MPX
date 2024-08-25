@@ -14,6 +14,12 @@ docker build -t nachos .
 
 ### Run
 
+Tested environments:
+
+- Ubuntu
+- MacOS
+- WSL2 on Windows (not under directory mounted, e.g. /mnt/c/)
+
 ```bash
 # Get into the directory if you are not in it
 cd NachOS-4.0_MP1
