@@ -18,7 +18,7 @@ docker build -t nachos .
 # Get into the directory if you are not in it
 cd NachOS-4.0_MP1
 # Run the docker container with the source code mounted
-docker run --rm -v $(PWD):/nachos -it --platform=linux/amd64 nachos
+docker run --rm -v $(pwd):/nachos -it --platform=linux/amd64 nachos
 ```
 
 ```bash
