@@ -14,7 +14,7 @@ docker build -t nachos .
 
 ```bash
 cd NachOS-4.0_MP1
-docker run --rm -v $(PWD):/nachos -it nachos
+docker run --rm -v $(PWD):/nachos -it --platform=linux/amd64 nachos
 $ cd code/test
 # Build nachos
 $ bash build_nachos_docker.sh
