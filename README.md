@@ -6,7 +6,7 @@
 
 If you see `qemu: uncaught target signal 11 (Segmentation fault) - core dumped`, you may need to downgrade docker desktop to 4.24.2 or upgrade macos to Sonoma. See [here](https://github.com/docker/for-mac/issues/7172)
 
-### Build
+### Build(Not required)
 
 ```bash
 # Download the source code if you haven't
@@ -28,7 +28,7 @@ Tested environments:
 # Get into the directory if you are not in it
 cd NachOS-4.0_MP1
 # Run the docker container with the source code mounted
-docker run --rm -v $(pwd):/nachos -it --platform=linux/amd64 nachos
+docker run --rm -v $(pwd):/nachos -it --platform=linux/amd64 dasbd72/nachos:dev-v1.0
 ```
 
 ```bash
