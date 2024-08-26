@@ -4,21 +4,7 @@
 
 ### Prerequisite(MacOs)
 
-For users not using x86 systems, to build and run the image, you should install qemu first.
-
-For example, to install qemu on mac, you should
-
-- Install [brew](https://brew.sh/) first
-- Then install qemu through brew with `brew install qemu`
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-brew install qemu
-```
-
-#### Issues
-
-If you still see `qemu: uncaught target signal 11 (Segmentation fault) - core dumped` after qemu is installed, you may need to downgrade docker desktop to 4.24.2 or upgrade macos to Sonoma. See [here](https://github.com/docker/for-mac/issues/7172)
+If you see `qemu: uncaught target signal 11 (Segmentation fault) - core dumped`, you may need to downgrade docker desktop to 4.24.2 or upgrade macos to Sonoma. See [here](https://github.com/docker/for-mac/issues/7172)
 
 ### Build
 
