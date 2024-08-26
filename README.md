@@ -20,7 +20,7 @@ brew install qemu
 
 If you still see `qemu: uncaught target signal 11 (Segmentation fault) - core dumped` after qemu is installed, you may need to downgrade docker desktop to 4.24.2 or upgrade macos to Sonoma. See [here](https://github.com/docker/for-mac/issues/7172)
 
-### Setup
+### Build
 
 ```bash
 # Download the source code if you haven't
