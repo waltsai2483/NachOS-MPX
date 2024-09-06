@@ -9,11 +9,8 @@ If you see `qemu: uncaught target signal 11 (Segmentation fault) - core dumped`,
 ### Build(Not required)
 
 ```bash
-# Download the source code if you haven't
-git clone git@github.com:NTHU-LSALAB/NachOS-4.0_MP1_src.git NachOS-4.0_MP1
-cd NachOS-4.0_MP1
 # Build the docker image
-docker build -t nachos .
+make build
 ```
 
 ### Run
@@ -25,10 +22,8 @@ Tested environments:
 - WSL2 on Windows (not under directory mounted, e.g. /mnt/c/)
 
 ```bash
-# Get into the directory if you are not in it
-cd NachOS-4.0_MP1
 # Run the docker container with the source code mounted
-docker run --rm -v $(pwd):/nachos -it --platform=linux/amd64 dasbd72/nachos:dev-v1.0
+make run
 ```
 
 ```bash
