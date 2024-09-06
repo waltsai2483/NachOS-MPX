@@ -19,6 +19,11 @@ RUN ln -s /usr/bin/g++44 /usr/bin/g++
 # Install oh-my-bash for a better shell experience, but don't fail the build if it fails
 RUN bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" || true
 
+# Copy the necessary files to the image
+COPY usr /nachos/usr
+COPY coff2noff /nachos/coff2noff
+COPY code/build.linux /nachos/code/build.linux
+
 WORKDIR /nachos/code/test
 
 ENTRYPOINT [ "/bin/bash" ]

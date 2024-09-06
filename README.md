@@ -29,9 +29,12 @@ make run
 ```bash
 # Inside the container, you should be in the code/test directory
 # Build nachos with the provided script
-bash build_nachos_docker.sh
+bash build_nachos.sh
 # Build the target test
 make clean; make <test>
 # Run the test
-../build.linux/nachos.bin -e <test>
+../build.linux/nachos -e <test>
+# For example
+make clean; make halt
+../build.linux/nachos -e halt
 ```

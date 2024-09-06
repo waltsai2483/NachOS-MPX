@@ -15,7 +15,11 @@ build:
 	@echo "Building image..."
 	@docker build -t $(image) .
 
+MOUNT_DIR_RO = code/filesys code/lib code/machine code/network code/threads code/userprog # Read-only directories
+MOUNT_DIR_RW = code/test # Read-write directories
+MOUNT_OPT = $(foreach dir,$(MOUNT_DIR_RO),-v $(CURDIR)/$(dir):/nachos/$(dir):ro) $(foreach dir,$(MOUNT_DIR_RW),-v $(CURDIR)/$(dir):/nachos/$(dir))
+
 .Phony: run
 run:
 	@echo "Running container..."
-	@docker run --rm -v $(CURDIR):/nachos -it --platform=linux/amd64 $(image)
+	@docker run --rm -it --platform=linux/amd64 $(MOUNT_OPT) $(image)
