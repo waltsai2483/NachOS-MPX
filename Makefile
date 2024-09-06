@@ -1,4 +1,4 @@
-image = dasbd72/nachos:dev-v1.0
+image = dasbd72/nachos:dev-v2.0
 
 .Phony: pull
 pull:

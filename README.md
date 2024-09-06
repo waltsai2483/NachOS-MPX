@@ -34,7 +34,15 @@ bash build_nachos.sh
 make clean; make <test>
 # Run the test
 ../build.linux/nachos -e <test>
+
 # For example
+bash build_nachos.sh -j
+# or clean and build
+bash build_nachos.sh -cj
+# or clean and build without showing make outputs
+bash build_nachos.sh -cqj
+
+# Build and run the halt test
 make clean; make halt
 ../build.linux/nachos -e halt
 ```
