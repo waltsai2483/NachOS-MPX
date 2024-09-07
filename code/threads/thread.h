@@ -105,6 +105,8 @@ class Thread {
     char *getName() { return (name); }
 
     int getID() { return (ID); }
+    void setIsExec() { this->isExec = true; }
+    bool getIsExec() { return (isExec); }
     void Print() { cout << name; }
     void SelfTest();  // test whether thread impl is working
 
@@ -117,6 +119,7 @@ class Thread {
     ThreadStatus status;  // ready, running or blocked
     char *name;
     int ID;
+    bool isExec;  // Is this thread an user executable thread
     void StackAllocate(VoidFunctionPtr func, void *arg);
     // Allocate a stack for thread.
     // Used internally by Fork()

@@ -67,6 +67,8 @@ class Kernel {
     FileSystem *fileSystem;
     PostOfficeInput *postOfficeIn;
     PostOfficeOutput *postOfficeOut;
+    bool execExit;       // exit if all threads are finished
+    int execRunningNum;  // number of running threads
 
     int hostName;  // machine identifier
 

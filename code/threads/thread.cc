@@ -37,6 +37,7 @@ const int STACK_FENCEPOST = 0xdedbeef;
 Thread::Thread(char *threadName, int threadID) {
     ID = threadID;
     name = threadName;
+    isExec = false;
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
@@ -143,6 +144,9 @@ void Thread::Begin() {
 
     kernel->scheduler->CheckToBeDestroyed();
     kernel->interrupt->Enable();
+    if (kernel->execExit && this->getIsExec()) {
+        kernel->execRunningNum++;
+    }
 }
 
 //----------------------------------------------------------------------
@@ -165,6 +169,12 @@ void Thread::Finish() {
     ASSERT(this == kernel->currentThread);
 
     DEBUG(dbgThread, "Finishing thread: " << name);
+    if (kernel->execExit && this->getIsExec()) {
+        kernel->execRunningNum--;
+        if (kernel->execRunningNum == 0) {
+            kernel->interrupt->Halt();
+        }
+    }
     Sleep(TRUE);  // invokes SWITCH
     // not reached
 }

@@ -28,6 +28,7 @@
 Kernel::Kernel(int argc, char **argv) {
     randomSlice = FALSE;
     debugUserProg = FALSE;
+    execExit = FALSE;
     consoleIn = NULL;   // default is stdin
     consoleOut = NULL;  // default is stdout
 #ifndef FILESYS_STUB
@@ -48,6 +49,10 @@ Kernel::Kernel(int argc, char **argv) {
         } else if (strcmp(argv[i], "-e") == 0) {
             execfile[++execfileNum] = argv[++i];
             cout << execfile[execfileNum] << "\n";
+        } else if (strcmp(argv[i], "-ee") == 0) {
+            // Added by @dasbd72
+            // To end the program after all the threads are done
+            execExit = TRUE;
         } else if (strcmp(argv[i], "-ci") == 0) {
             ASSERT(i + 1 < argc);
             consoleIn = argv[i + 1];
@@ -257,6 +262,7 @@ void Kernel::ExecAll() {
 
 int Kernel::Exec(char *name) {
     t[threadNum] = new Thread(name, threadNum);
+    t[threadNum]->setIsExec();
     t[threadNum]->space = new AddrSpace();
     t[threadNum]->Fork((VoidFunctionPtr)&ForkExecute, (void *)t[threadNum]);
     threadNum++;
