@@ -46,6 +46,10 @@ test/*
 !test/build_nachos.sh
 !test/build_nachos_docker.sh
 
+!test/hw3_all.sh
+!test/hw3_partA.sh
+!test/hw3_ans
+
 !test/hw4_all.sh
 !test/hw4_partII_a.sh
 !test/hw4_partII_b.sh
