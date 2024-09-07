@@ -218,6 +218,18 @@ hw3t3: hw3t3.o start.o
 	$(LD) $(LDFLAGS) start.o hw3t3.o -o hw3t3.coff
 	$(COFF2NOFF) hw3t3.coff hw3t3
 
+hw4t1.o: hw4t1.c
+	$(CC) $(CFLAGS) -c hw4t1.c
+hw4t1: hw4t1.o start.o
+	$(LD) $(LDFLAGS) start.o hw4t1.o -o hw4t1.coff
+	$(COFF2NOFF) hw4t1.coff hw4t1
+
+hw4t2.o: hw4t2.c
+	$(CC) $(CFLAGS) -c hw4t2.c
+hw4t2: hw4t2.o start.o
+	$(LD) $(LDFLAGS) start.o hw4t2.o -o hw4t2.coff
+	$(COFF2NOFF) hw4t2.coff hw4t2
+
 clean:
 	$(RM) -f *.o *.ii
 	$(RM) -f *.coff
