@@ -22,7 +22,6 @@ RUN bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/
 # Copy the necessary files to the image
 COPY usr /nachos/usr
 COPY coff2noff /nachos/coff2noff
-COPY code/build.linux /nachos/code/build.linux
 
 WORKDIR /nachos/code/test
 

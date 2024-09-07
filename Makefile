@@ -1,4 +1,4 @@
-image = dasbd72/nachos:dev-v2.0
+image = dasbd72/nachos:dev-v2.1
 
 .Phony: pull
 pull:
@@ -15,7 +15,7 @@ build:
 	@echo "Building image..."
 	@docker build -t $(image) .
 
-MOUNT_DIR_RO = code/filesys code/lib code/machine code/network code/threads code/userprog # Read-only directories
+MOUNT_DIR_RO = code/filesys code/lib code/machine code/network code/threads code/userprog code/build.linux/Makefile code/build.linux/Makefile.dep # Read-only directories
 MOUNT_DIR_RW = code/test # Read-write directories
 MOUNT_OPT = $(foreach dir,$(MOUNT_DIR_RO),-v $(CURDIR)/$(dir):/nachos/$(dir):ro) $(foreach dir,$(MOUNT_DIR_RW),-v $(CURDIR)/$(dir):/nachos/$(dir))
 
