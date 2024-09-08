@@ -20,14 +20,6 @@
 2
 return value:1
 return value:2
-Machine halting!
-
-This is halt
-Ticks: total 22965, idle 1, system 2650, user 20314
-Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 36
-Paging: faults 0
-Network I/O: packets received 0, sent 0
 ===== Test case 2: -ep hw3t1 50 -ep hw3t2 50 -ee  =====
 1
 1
@@ -49,14 +41,6 @@ return value:1
 2
 2
 return value:2
-Machine halting!
-
-This is halt
-Ticks: total 21119, idle 35, system 770, user 20314
-Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 36
-Paging: faults 0
-Network I/O: packets received 0, sent 0
 ===== Test case 3: -ep hw3t1 50 -ep hw3t2 90 -ee  =====
 2
 2
@@ -78,14 +62,6 @@ return value:2
 1
 1
 return value:1
-Machine halting!
-
-This is halt
-Ticks: total 21119, idle 35, system 770, user 20314
-Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 36
-Paging: faults 0
-Network I/O: packets received 0, sent 0
 ===== Test case 4: -ep hw3t1 100 -ep hw3t2 100 -ee  =====
 1
 1
@@ -107,14 +83,6 @@ return value:1
 2
 2
 return value:2
-Machine halting!
-
-This is halt
-Ticks: total 21227, idle 23, system 890, user 20314
-Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 36
-Paging: faults 0
-Network I/O: packets received 0, sent 0
 ===== Test case 5: -ep hw3t1 40 -ep hw3t2 55 -ee  =====
 2
 2
@@ -136,14 +104,6 @@ return value:2
 1
 1
 return value:1
-Machine halting!
-
-This is halt
-Ticks: total 21128, idle 34, system 780, user 20314
-Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 36
-Paging: faults 0
-Network I/O: packets received 0, sent 0
 ===== Test case 6: -ep hw3t1 40 -ep hw3t2 90 -ee  =====
 2
 2
@@ -165,14 +125,6 @@ return value:2
 1
 1
 return value:1
-Machine halting!
-
-This is halt
-Ticks: total 21128, idle 34, system 780, user 20314
-Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 36
-Paging: faults 0
-Network I/O: packets received 0, sent 0
 ===== Test case 7: -ep hw3t1 90 -ep hw3t2 100 -ee  =====
 2
 2
@@ -194,14 +146,6 @@ return value:2
 1
 1
 return value:1
-Machine halting!
-
-This is halt
-Ticks: total 21128, idle 34, system 780, user 20314
-Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 36
-Paging: faults 0
-Network I/O: packets received 0, sent 0
 ===== Test case 8: -ep hw3t1 60 -ep hw3t3 50 -ee  =====
 1return value:3
 
@@ -214,11 +158,3 @@ Network I/O: packets received 0, sent 0
 1
 1
 return value:1
-Machine halting!
-
-This is halt
-Ticks: total 11146, idle 17, system 410, user 10719
-Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 18
-Paging: faults 0
-Network I/O: packets received 0, sent 0

@@ -16,6 +16,7 @@
             "compilerPath": "/usr/bin/g++",
             "defines": [
                 "FILESYS_STUB",
+                "NO_HALT_STAT",
                 "RDATA",
                 "SIM_FIX",
                 "CHANGED",
