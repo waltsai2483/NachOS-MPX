@@ -1,4 +1,4 @@
-/hw4_test1
+/hw4t1
 abcdefghijklmnopqrstuvwxyz
-/hw4_test2
+/hw4t2
 Passed! ^_^

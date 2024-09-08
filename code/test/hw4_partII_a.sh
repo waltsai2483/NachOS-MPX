@@ -1,7 +1,7 @@
 #!/bin/sh
 ../build.linux/nachos -f
-../build.linux/nachos -cp hw4_test1 /hw4_test1
-../build.linux/nachos -e /hw4_test1
+../build.linux/nachos -cp hw4t1 /hw4t1
+../build.linux/nachos -e /hw4t1
 ../build.linux/nachos -p /file1
-../build.linux/nachos -cp hw4_test2 /hw4_test2
-../build.linux/nachos -e /hw4_test2
+../build.linux/nachos -cp hw4t2 /hw4t2
+../build.linux/nachos -e /hw4t2
