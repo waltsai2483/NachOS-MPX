@@ -55,6 +55,8 @@ test/*
 !test/hw4_partII_b.sh
 !test/hw4_partIII.sh
 !test/hw4_ans
+!test/num_100.txt
+!test/num_1000.txt
 
 # threads
 threads/*
