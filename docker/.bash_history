@@ -1,4 +1,5 @@
-./build_nachos.sh
+./build_nachos.sh -j
+./build_nachos.sh -jc
 make clean
 make
 ../build.linux/nachos -e halt
