@@ -51,7 +51,7 @@ void ExceptionHandler(ExceptionType which) {
     char ch;
     int val;
     int type = kernel->machine->ReadRegister(2);
-    int status, exit, threadID, programID, fileID, numChar;
+    int status, exit, threadID, programID, fileID, numChar, endPos;
     DEBUG(dbgSys, "Received Exception " << which << " type: " << type << "\n");
     DEBUG(dbgTraCode, "In ExceptionHandler(), Received Exception " << which << " type: " << type << ", " << kernel->stats->totalTicks);
     switch (which) {
@@ -97,6 +97,82 @@ void ExceptionHandler(ExceptionType which) {
                     kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
                     kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
                     kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
+                    return;
+                    ASSERTNOTREACHED();
+                    break;
+                case SC_Open:
+                    val = kernel->machine->ReadRegister(4);
+                    {
+                        char *filename = &(kernel->machine->mainMemory[val]);
+                        // cout << filename << endl;
+                        fileID = SysOpen(filename);
+                        kernel->machine->WriteRegister(2, fileID);
+                    }
+                    DEBUG(dbgSys, "Successfully open file with id = " << fileID << "\n");
+                    {
+                        /* set program counter */
+                        kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+                        kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+                        kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
+                    }
+                    return;
+                    ASSERTNOTREACHED();
+                    break;
+                case SC_Write:
+                    val = kernel->machine->ReadRegister(4);
+                    numChar = kernel->machine->ReadRegister(5);
+                    fileID = kernel->machine->ReadRegister(6);
+                    {
+                        char *filename = &(kernel->machine->mainMemory[val]);
+                        // cout << filename << endl;
+                        status = SysWrite(filename, numChar, fileID);
+                        kernel->machine->WriteRegister(2, status);
+                    }
+                    DEBUG(dbgSys, "Successfully write file with id = " << fileID << "\n");
+                    {
+                        /* set program counter */
+                        kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+                        kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+                        kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
+                    }
+                    return;
+                    ASSERTNOTREACHED();
+                    break;
+                case SC_Read:
+                    val = kernel->machine->ReadRegister(4);
+                    numChar = kernel->machine->ReadRegister(5);
+                    fileID = kernel->machine->ReadRegister(6);
+                    {
+                        char *filename = &(kernel->machine->mainMemory[val]);
+                        // cout << filename << endl;
+                        status = SysRead(filename, numChar, fileID);
+                        kernel->machine->WriteRegister(2, status);
+                    }
+                    DEBUG(dbgSys, "Successfully read file with id = " << fileID << "\n");
+                    {
+                        /* set program counter */
+                        kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+                        kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+                        kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
+                    }
+                    return;
+                    ASSERTNOTREACHED();
+                    break;
+                case SC_Close:
+                    fileID = kernel->machine->ReadRegister(4);
+                    DEBUG(dbgSys, "Tried close file " << fileID);
+                    {
+                        // cout << filename << endl;
+                        status = SysClose(fileID);
+                        kernel->machine->WriteRegister(2, status);
+                    }
+                    DEBUG(dbgSys, "file with id = " << fileID << " closed with status " << status << ". \n");
+                    {
+                        /* set program counter */
+                        kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+                        kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+                        kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
+                    }
                     return;
                     ASSERTNOTREACHED();
                     break;

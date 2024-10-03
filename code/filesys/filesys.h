@@ -57,6 +57,18 @@ class FileSystem {
         Close(fileDescriptor);
         return TRUE;
     }
+
+    int SeekEntry() {
+        if (TableSize >= 20) {
+            return 0;
+        }
+        
+        while (OpenFileTable[NextTableEntry]) {
+            NextTableEntry = (NextTableEntry + 1) % 20;
+        }
+        return 1;
+    }
+
     // The OpenFile function is used for open user program  [userprog/addrspace.cc]
     OpenFile *Open(char *name) {
         int fileDescriptor = OpenForReadWrite(name, FALSE);
@@ -66,19 +78,47 @@ class FileSystem {
     }
 
     //  The OpenAFile function is used for kernel open system call
-    /*  OpenFileId OpenAFile(char *name) {
+    OpenFileId OpenAFile(char *name) {
+        int fileDescriptor = OpenForReadWrite(name, FALSE);
+        if (fileDescriptor == -1 || !SeekEntry())
+            return -1;
+        OpenFileTable[NextTableEntry] = new OpenFile(fileDescriptor);
+        TableSize++;
+        return NextTableEntry;
+    }
+    
+    int WriteAFile(char *buffer, int size, OpenFileId id){
+        if (!OpenFileTable[id]) {
+            return -1;
         }
-        int WriteFile(char *buffer, int size, OpenFileId id){
+
+        return OpenFileTable[id]->Write(buffer, size);
+    }
+
+    int ReadAFile(char *buffer, int size, OpenFileId id){
+        if (!OpenFileTable[id]) {
+            return -1;
         }
-        int ReadFile(char *buffer, int size, OpenFileId id){
+
+        return OpenFileTable[id]->Read(buffer, size);
+    }
+
+    int CloseAFile(OpenFileId id){
+        if (!OpenFileTable[id]) {
+            return -1;
         }
-        int CloseFile(OpenFileId id){
-        }
-    */
+        delete OpenFileTable[id];
+        OpenFileTable[id] = NULL;
+        TableSize--;
+        NextTableEntry = id;
+        return 1;
+    }
 
     bool Remove(char *name) { return Unlink(name) == 0; }
 
     OpenFile *OpenFileTable[20];
+    int NextTableEntry;
+    int TableSize;
 };
 
 #else  // FILESYS

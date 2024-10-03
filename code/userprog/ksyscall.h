@@ -35,11 +35,22 @@ int SysCreate(char *filename) {
     return kernel->fileSystem->Create(filename);
 }
 
-// When you finish the function "OpenAFile", you can remove the comment below.
-/*
-OpenFileId SysOpen(char *name)
-{
-        return kernel->fileSystem->OpenAFile(name);
+int SysOpen(char *filename) {
+    // return value
+    // 1: success
+    // 0: failed
+    return kernel->fileSystem->OpenAFile(filename);
 }
-*/
+
+int SysWrite(char *buffer, int size, OpenFileId id) {
+    return kernel->fileSystem->WriteAFile(buffer, size, id);
+}
+
+int SysRead(char *buffer, int size, OpenFileId id) {
+    return kernel->fileSystem->ReadAFile(buffer, size, id);
+}
+
+int SysClose(int id) {
+    return kernel->fileSystem->CloseAFile(id);
+}
 #endif /* ! __USERPROG_KSYSCALL_H__ */
