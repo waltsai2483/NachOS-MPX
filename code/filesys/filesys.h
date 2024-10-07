@@ -59,14 +59,12 @@ class FileSystem {
     }
 
     int SeekEntry() {
-        if (TableSize >= 20) {
-            return 0;
+        for (short i = 0; i < 20; i++) {
+            if (!OpenFileTable[i]) {
+                return i;
+            }
         }
-        
-        while (OpenFileTable[NextTableEntry]) {
-            NextTableEntry = (NextTableEntry + 1) % 20;
-        }
-        return 1;
+        return -1;
     }
 
     // The OpenFile function is used for open user program  [userprog/addrspace.cc]
@@ -79,16 +77,17 @@ class FileSystem {
 
     //  The OpenAFile function is used for kernel open system call
     OpenFileId OpenAFile(char *name) {
-        if (!SeekEntry()) {
+        int id = SeekEntry();
+        if (id == -1) {
             return -1;
         }
 
         int fileDescriptor = OpenForReadWrite(name, FALSE);
         if (fileDescriptor == -1)
             return -1;
-        OpenFileTable[NextTableEntry] = new OpenFile(fileDescriptor);
-        TableSize++;
-        return NextTableEntry;
+
+        OpenFileTable[id] = new OpenFile(fileDescriptor);
+        return id;
     }
     
     int WriteAFile(char *buffer, int size, OpenFileId id){
@@ -122,16 +121,12 @@ class FileSystem {
         }
         delete OpenFileTable[id];
         OpenFileTable[id] = NULL;
-        TableSize--;
-        NextTableEntry = id;
         return 1;
     }
 
     bool Remove(char *name) { return Unlink(name) == 0; }
 
     OpenFile *OpenFileTable[20];
-    int NextTableEntry;
-    int TableSize;
 };
 
 #else  // FILESYS
