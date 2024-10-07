@@ -79,8 +79,12 @@ class FileSystem {
 
     //  The OpenAFile function is used for kernel open system call
     OpenFileId OpenAFile(char *name) {
+        if (!SeekEntry()) {
+            return -1;
+        }
+
         int fileDescriptor = OpenForReadWrite(name, FALSE);
-        if (fileDescriptor == -1 || !SeekEntry())
+        if (fileDescriptor == -1)
             return -1;
         OpenFileTable[NextTableEntry] = new OpenFile(fileDescriptor);
         TableSize++;
@@ -88,6 +92,9 @@ class FileSystem {
     }
     
     int WriteAFile(char *buffer, int size, OpenFileId id){
+        if (id < 0 || id >= 20) {
+            return -1;
+        }
         if (!OpenFileTable[id]) {
             return -1;
         }
@@ -96,6 +103,9 @@ class FileSystem {
     }
 
     int ReadAFile(char *buffer, int size, OpenFileId id){
+        if (id < 0 || id >= 20) {
+            return -1;
+        }
         if (!OpenFileTable[id]) {
             return -1;
         }
@@ -104,6 +114,9 @@ class FileSystem {
     }
 
     int CloseAFile(OpenFileId id){
+        if (id < 0 || id >= 20) {
+            return -1;
+        }
         if (!OpenFileTable[id]) {
             return -1;
         }
