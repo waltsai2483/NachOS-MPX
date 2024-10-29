@@ -63,18 +63,6 @@ SwapHeader(NoffHeader *noffH) {
 //----------------------------------------------------------------------
 
 AddrSpace::AddrSpace() {
-    pageTable = new TranslationEntry[NumPhysPages];
-    for (int i = 0; i < NumPhysPages; i++) {
-        pageTable[i].virtualPage = i;  // for now, virt page # = phys page #
-        pageTable[i].physicalPage = i;
-        pageTable[i].valid = TRUE;
-        pageTable[i].use = FALSE;
-        pageTable[i].dirty = FALSE;
-        pageTable[i].readOnly = FALSE;
-    }
-
-    // zero out the entire address space
-    bzero(kernel->machine->mainMemory, MemorySize);
 }
 
 //----------------------------------------------------------------------
@@ -83,6 +71,10 @@ AddrSpace::AddrSpace() {
 //----------------------------------------------------------------------
 
 AddrSpace::~AddrSpace() {
+    DEBUG(dbgSys, "end");
+    for (int i = 0; i < numPages; i++) {
+        kernel->ReleasePage(pageTable[i].physicalPage);
+    }
     delete pageTable;
 }
 
@@ -130,32 +122,59 @@ bool AddrSpace::Load(char *fileName) {
                                        // to run anything too big --
                                        // at least until we have
                                        // virtual memory
+    if (!kernel->CanAllocatePages(numPages)) { // Make sure phys memory has enough unused pages to store the program
+        DEBUG(dbgSys, "There's no space for this program!");
+        delete executable;
+        ExceptionHandler(MemoryLimitException);
+        return FALSE;
+    }
 
+    pageTable = new TranslationEntry[numPages];
+    int virtNum = 0;
+    for (int i = 0; i < NumPhysPages && virtNum < numPages; i++) {
+        if (kernel->AllocatePage(i)) { // If page's allocated successfully then add to the page table
+            DEBUG(dbgSys, "Allocate phys page " << i << " as virt page " << virtNum);
+            pageTable[virtNum].virtualPage = virtNum;
+            pageTable[virtNum].physicalPage = i;
+            pageTable[virtNum].valid = TRUE;
+            pageTable[virtNum].use = FALSE;
+            pageTable[virtNum].dirty = FALSE;
+            pageTable[virtNum].readOnly = FALSE;
+            bzero(kernel->machine->mainMemory + i * PageSize, PageSize); // zero out spaces in certain physical page #i
+            virtNum++;
+        }
+    }
     DEBUG(dbgAddr, "Initializing address space: " << numPages << ", " << size);
 
     // then, copy in the code and data segments into memory
     // Note: this code assumes that virtual address = physical address
+
+    unsigned int codeAddr, initDataAddr, readOnlyDataAddr;
+    Translate(noffH.code.virtualAddr, &codeAddr, 1);
+    Translate(noffH.initData.virtualAddr, &initDataAddr, 1);
+    Translate(noffH.readonlyData.virtualAddr, &readOnlyDataAddr, 1);
+
     if (noffH.code.size > 0) {
         DEBUG(dbgAddr, "Initializing code segment.");
-        DEBUG(dbgAddr, noffH.code.virtualAddr << ", " << noffH.code.size);
+        DEBUG(dbgAddr, codeAddr << ", " << noffH.code.size);
         executable->ReadAt(
-            &(kernel->machine->mainMemory[noffH.code.virtualAddr]),
+            &(kernel->machine->mainMemory[codeAddr]),
             noffH.code.size, noffH.code.inFileAddr);
     }
     if (noffH.initData.size > 0) {
         DEBUG(dbgAddr, "Initializing data segment.");
-        DEBUG(dbgAddr, noffH.initData.virtualAddr << ", " << noffH.initData.size);
+        DEBUG(dbgAddr, initDataAddr << ", " << noffH.initData.size);
         executable->ReadAt(
-            &(kernel->machine->mainMemory[noffH.initData.virtualAddr]),
+            &(kernel->machine->mainMemory[initDataAddr]),
             noffH.initData.size, noffH.initData.inFileAddr);
     }
 
 #ifdef RDATA
     if (noffH.readonlyData.size > 0) {
         DEBUG(dbgAddr, "Initializing read only data segment.");
-        DEBUG(dbgAddr, noffH.readonlyData.virtualAddr << ", " << noffH.readonlyData.size);
+        DEBUG(dbgAddr, readOnlyDataAddr << ", " << noffH.readonlyData.size);
         executable->ReadAt(
-            &(kernel->machine->mainMemory[noffH.readonlyData.virtualAddr]),
+            &(kernel->machine->mainMemory[readOnlyDataAddr]),
             noffH.readonlyData.size, noffH.readonlyData.inFileAddr);
     }
 #endif

@@ -34,6 +34,11 @@ Kernel::Kernel(int argc, char **argv) {
 #ifndef FILESYS_STUB
     formatFlag = FALSE;
 #endif
+    usedPhysPages = new bool[NumPhysPages];
+    for (int i = 0; i < NumPhysPages; i++)
+        usedPhysPages[i] = false;
+    usedPhysPageSize = 0;
+
     reliability = 1;  // network reliability, default is 1.0
     hostName = 0;     // machine id, also UNIX socket name
                       // 0 is the default machine id
@@ -250,6 +255,31 @@ void ForkExecute(Thread *t) {
     }
 
     t->space->Execute(t->getName());
+}
+
+bool Kernel::IsPhysPageValid(int physPageID) {
+    if (physPageID < 0 || physPageID >= NumPhysPages) return FALSE;
+    return !usedPhysPages[physPageID];
+}
+
+bool Kernel::CanAllocatePages(int allocatedPageSize) {
+    return usedPhysPageSize + allocatedPageSize <= NumPhysPages;
+}
+
+bool Kernel::AllocatePage(int physPageID) {
+    if (physPageID < 0 || physPageID >= NumPhysPages) return FALSE; // Check if page ID is legal
+    if (usedPhysPages[physPageID]) return FALSE; // Check if certain page is being used
+
+    usedPhysPageSize++;
+    usedPhysPages[physPageID] = TRUE;
+    return TRUE;
+}
+
+void Kernel::ReleasePage(int physPageID) {
+    if (physPageID < 0 || physPageID >= NumPhysPages) return;
+    if (!usedPhysPages[physPageID]) return;
+    usedPhysPages[physPageID] = FALSE;
+    usedPhysPageSize--;
 }
 
 void Kernel::ExecAll() {

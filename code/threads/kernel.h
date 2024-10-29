@@ -43,6 +43,10 @@ class Kernel {
     void ConsoleTest();  // interactive console self test
     void NetworkTest();  // interactive 2-machine network test
     Thread *getThread(int threadID) { return t[threadID]; }
+    bool IsPhysPageValid(int physPageID);
+    bool CanAllocatePages(int allocatedPageSize);
+    bool AllocatePage(int physPageID);
+    void ReleasePage(int physPageID);
 
     void PrintInt(int number);
     int CreateFile(char *filename);  // fileSystem call
@@ -75,6 +79,8 @@ class Kernel {
    private:
     Thread *t[10];
     char *execfile[10];
+    bool *usedPhysPages;
+    int usedPhysPageSize;
     int execfileNum;
     int threadNum;
     bool randomSlice;    // enable pseudo-random time slicing
