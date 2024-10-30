@@ -27,6 +27,7 @@ class AddrSpace {
     bool Load(char *fileName);  // Load a program into addr space from
                                 // a file
                                 // return false if not found
+   ExceptionType LoadDataSegment(OpenFile* executable, int virtualAddr, int inFileAddr, int segmentSize, int isReadWrite);
 
     void Execute(char *fileName);  // Run a program
                                    // assumes the program has already

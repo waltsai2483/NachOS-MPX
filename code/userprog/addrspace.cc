@@ -148,8 +148,14 @@ bool AddrSpace::Load(char *fileName) {
 
     // then, copy in the code and data segments into memory
     // Note: this code assumes that virtual address = physical address
+    
+    LoadDataSegment(executable, noffH.code.virtualAddr, noffH.code.inFileAddr, noffH.code.size, 1);
+    LoadDataSegment(executable, noffH.initData.virtualAddr, noffH.initData.inFileAddr, noffH.initData.size, 1);
+#ifdef RDATA
+    LoadDataSegment(executable, noffH.readonlyData.virtualAddr, noffH.readonlyData.inFileAddr, noffH.readonlyData.size, 1);
+#endif
 
-    unsigned int codeAddr, initDataAddr, readOnlyDataAddr;
+    /*unsigned int codeAddr, initDataAddr, readOnlyDataAddr;
     Translate(noffH.code.virtualAddr, &codeAddr, 1);
     Translate(noffH.initData.virtualAddr, &initDataAddr, 1);
     Translate(noffH.readonlyData.virtualAddr, &readOnlyDataAddr, 1);
@@ -177,10 +183,27 @@ bool AddrSpace::Load(char *fileName) {
             &(kernel->machine->mainMemory[readOnlyDataAddr]),
             noffH.readonlyData.size, noffH.readonlyData.inFileAddr);
     }
-#endif
+#endif*/
 
     delete executable;  // close file
     return TRUE;        // success
+}
+
+ExceptionType AddrSpace::LoadDataSegment(OpenFile* executable, int virtualAddr, int inFileAddr, int segmentSize, int isReadWrite) {
+    unsigned int readBegin = 0, readEnd = ((virtualAddr / PageSize) + 1) * PageSize - virtualAddr; // the distance between virtualAddr & end position of the page where virtualAddr is at.
+    while (readBegin < segmentSize) {
+        unsigned int physAddr;
+        ExceptionType exception = Translate((virtualAddr + readBegin), &physAddr, isReadWrite);
+        if (exception != NoException) {
+            return exception;
+        }
+
+        executable->ReadAt(&(kernel->machine->mainMemory[physAddr]), readEnd - readBegin, inFileAddr + readBegin);
+
+        readBegin = readEnd;
+        readEnd = readEnd + PageSize > segmentSize ? segmentSize : readEnd + PageSize;
+    }
+    return NoException;
 }
 
 //----------------------------------------------------------------------
