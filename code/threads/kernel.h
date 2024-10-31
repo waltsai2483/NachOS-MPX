@@ -79,7 +79,7 @@ class Kernel {
    private:
     Thread *t[10];
     char *execfile[10];
-    bool *usedPhysPages;
+    bool usedPhysPages[NumPhysPages];
     int usedPhysPageSize;
     int execfileNum;
     int threadNum;

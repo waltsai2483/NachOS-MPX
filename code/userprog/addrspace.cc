@@ -58,8 +58,7 @@ SwapHeader(NoffHeader *noffH) {
 // AddrSpace::AddrSpace
 // 	Create an address space to run a user program.
 //	Set up the translation from program memory to physical
-//	memory.  For now, this is really simple (1:1), since we are
-//	only uniprogramming, and we have a single unsegmented page table
+//	memory. 
 //----------------------------------------------------------------------
 
 AddrSpace::AddrSpace() {
@@ -71,7 +70,7 @@ AddrSpace::AddrSpace() {
 //----------------------------------------------------------------------
 
 AddrSpace::~AddrSpace() {
-    DEBUG(dbgSys, "end");
+    DEBUG(dbgSys, "Release pages of the addrspace.");
     for (int i = 0; i < numPages; i++) {
         kernel->ReleasePage(pageTable[i].physicalPage);
     }
@@ -144,46 +143,15 @@ bool AddrSpace::Load(char *fileName) {
             virtNum++;
         }
     }
-    DEBUG(dbgAddr, "Initializing address space: " << numPages << ", " << size);
+    DEBUG(dbgSys, "Initializing address space: " << numPages << ", " << size);
 
-    // then, copy in the code and data segments into memory
-    // Note: this code assumes that virtual address = physical address
+    // then, copy in the code and data segments into memory using LoadDataSegment
     
     LoadDataSegment(executable, noffH.code.virtualAddr, noffH.code.inFileAddr, noffH.code.size, 1);
     LoadDataSegment(executable, noffH.initData.virtualAddr, noffH.initData.inFileAddr, noffH.initData.size, 1);
 #ifdef RDATA
-    LoadDataSegment(executable, noffH.readonlyData.virtualAddr, noffH.readonlyData.inFileAddr, noffH.readonlyData.size, 1);
+    LoadDataSegment(executable, noffH.readonlyData.virtualAddr, noffH.readonlyData.inFileAddr, noffH.readonlyData.size, 0);
 #endif
-
-    /*unsigned int codeAddr, initDataAddr, readOnlyDataAddr;
-    Translate(noffH.code.virtualAddr, &codeAddr, 1);
-    Translate(noffH.initData.virtualAddr, &initDataAddr, 1);
-    Translate(noffH.readonlyData.virtualAddr, &readOnlyDataAddr, 1);
-
-    if (noffH.code.size > 0) {
-        DEBUG(dbgAddr, "Initializing code segment.");
-        DEBUG(dbgAddr, codeAddr << ", " << noffH.code.size);
-        executable->ReadAt(
-            &(kernel->machine->mainMemory[codeAddr]),
-            noffH.code.size, noffH.code.inFileAddr);
-    }
-    if (noffH.initData.size > 0) {
-        DEBUG(dbgAddr, "Initializing data segment.");
-        DEBUG(dbgAddr, initDataAddr << ", " << noffH.initData.size);
-        executable->ReadAt(
-            &(kernel->machine->mainMemory[initDataAddr]),
-            noffH.initData.size, noffH.initData.inFileAddr);
-    }
-
-#ifdef RDATA
-    if (noffH.readonlyData.size > 0) {
-        DEBUG(dbgAddr, "Initializing read only data segment.");
-        DEBUG(dbgAddr, readOnlyDataAddr << ", " << noffH.readonlyData.size);
-        executable->ReadAt(
-            &(kernel->machine->mainMemory[readOnlyDataAddr]),
-            noffH.readonlyData.size, noffH.readonlyData.inFileAddr);
-    }
-#endif*/
 
     delete executable;  // close file
     return TRUE;        // success

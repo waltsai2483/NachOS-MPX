@@ -17,7 +17,7 @@
 static char* exceptionNames[] = {"no exception", "syscall",
                                  "page fault/no TLB entry", "page read only",
                                  "bus error", "address error", "overflow",
-                                 "illegal instruction", "memory limit exceeded"};
+                                 "illegal instruction"};
 
 //----------------------------------------------------------------------
 // CheckEndian

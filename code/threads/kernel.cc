@@ -34,7 +34,6 @@ Kernel::Kernel(int argc, char **argv) {
 #ifndef FILESYS_STUB
     formatFlag = FALSE;
 #endif
-    usedPhysPages = new bool[NumPhysPages];
     for (int i = 0; i < NumPhysPages; i++)
         usedPhysPages[i] = false;
     usedPhysPageSize = 0;

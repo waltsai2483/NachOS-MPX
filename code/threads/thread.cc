@@ -64,6 +64,10 @@ Thread::Thread(char *threadName, int threadID) {
 Thread::~Thread() {
     DEBUG(dbgThread, "Deleting thread: " << name);
     ASSERT(this != kernel->currentThread);
+    if (space != NULL) {
+        DEBUG(dbgThread, "Deleting addr space for " << name);
+        delete space;
+    }
     if (stack != NULL)
         DeallocBoundedArray((char *)stack, StackSize * sizeof(int));
 }
