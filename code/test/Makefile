@@ -112,10 +112,17 @@ ifeq ($(hosttype),unknown)
 PROGRAMS = unknownhost
 else
 # change this if you create a new test program!
-PROGRAMS = add halt createFile LotOfAdd
+PROGRAMS = add halt createFile LotOfAdd oom
 endif
 
 all: $(PROGRAMS)
+
+$(PROGRAMS): %: %.o start.o
+	$(LD) $(LDFLAGS) $^ -o $(patsubst %,%.coff,$@)
+	$(COFF2NOFF) $(patsubst %,%.coff,$@) $@
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $^
 
 start.o: start.S ../userprog/syscall.h
 	$(CC) $(CFLAGS) $(ASFLAGS) -c start.S
