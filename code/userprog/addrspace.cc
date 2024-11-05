@@ -117,10 +117,6 @@ bool AddrSpace::Load(char *fileName) {
     numPages = divRoundUp(size, PageSize);
     size = numPages * PageSize;
 
-    ASSERT(numPages <= NumPhysPages);  // check we're not trying
-                                       // to run anything too big --
-                                       // at least until we have
-                                       // virtual memory
     if (!kernel->CanAllocatePages(numPages)) { // Make sure phys memory has enough unused pages to store the program
         DEBUG(dbgSys, "There's no space for this program!");
         delete executable;
