@@ -22,7 +22,7 @@ class JobQueue {
    public:
    JobQueue() { list = new List<Thread*>; }
    ~JobQueue() { delete list; }
-   virtual void Push(Thread* thread) = 0;
+   virtual void Push(Thread* thread) { list->Append(thread); }
    virtual Thread* RemoveBest() = 0;
    void Remove(Thread *thread) { list->Remove(thread); }
    bool IsEmpty() { return list->IsEmpty(); }
@@ -34,19 +34,16 @@ class JobQueue {
 class SJFQueue: public JobQueue {
    public:
    Thread* RemoveBest();
-   void Push(Thread* thread);
 };
 
 class PriorityQueue: public JobQueue {
    public:
    Thread* RemoveBest();
-   void Push(Thread* thread);
 };
 
 class RRQueue: public JobQueue {
    public:
    Thread* RemoveBest();
-   void Push(Thread* thread);
 };
 
 class Scheduler {
@@ -69,8 +66,6 @@ class Scheduler {
     // SelfTest for scheduler is implemented in class Thread
 
    private:
-    List<Thread*>* readyList;  // queue of threads that are ready to run,
-                               // but not running
     SJFQueue readyL1;
     PriorityQueue readyL2;
     RRQueue readyL3;

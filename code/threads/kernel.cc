@@ -58,8 +58,6 @@ Kernel::Kernel(int argc, char **argv) {
         } else if (strcmp(argv[i], "-ep") == 0) {
             execfile[++execfileNum] = argv[++i];
             execfilePriority[execfileNum] = atoi(argv[++i]);
-            
-            cout << execfile[execfileNum] << "\n";
         } else if (strcmp(argv[i], "-ee") == 0) {
             // Added by @dasbd72
             // To end the program after all the threads are done

@@ -31,7 +31,6 @@
 //----------------------------------------------------------------------
 
 Scheduler::Scheduler() {
-    readyList = new List<Thread *>;
     toBeDestroyed = NULL;
 }
 
@@ -41,7 +40,6 @@ Scheduler::Scheduler() {
 //----------------------------------------------------------------------
 
 Scheduler::~Scheduler() {
-    delete readyList;
 }
 
 //----------------------------------------------------------------------
@@ -60,14 +58,15 @@ void Scheduler::ReadyToRun(Thread *thread) {
     if (thread->getPriority() <= 49) {
         if (readyL1.IsInList(thread)) readyL1.Remove(thread);
         readyL1.Push(thread);
+        DEBUG(dbgScheduler, "[A] Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L1");
     } else if (thread->getPriority() <= 99) {
         if (readyL2.IsInList(thread)) readyL2.Remove(thread);
         readyL2.Push(thread);
+        DEBUG(dbgScheduler, "[A] Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L2");
     } else if (thread->getPriority() <= 149) {
         if (readyL3.IsInList(thread)) readyL3.Remove(thread);
         readyL3.Push(thread);
-    } else {
-        readyList->Append(thread);
+        DEBUG(dbgScheduler, "[A] Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L3");
     }
 }
 
@@ -218,7 +217,12 @@ void Scheduler::CheckToBeDestroyed() {
 //----------------------------------------------------------------------
 void Scheduler::Print() {
     cout << "Ready list contents:\n";
-    readyList->Apply(ThreadPrint);
+    cout << "\tL1 Queue: ";
+    readyL1.list->Apply(ThreadPrint);
+    cout << "\tL2 Queue: ";
+    readyL2.list->Apply(ThreadPrint);
+    cout << "\tL3 Queue: ";
+    readyL3.list->Apply(ThreadPrint);
 }
 
 
@@ -253,19 +257,4 @@ Thread* PriorityQueue::RemoveBest() {
 Thread* RRQueue::RemoveBest() {
     if (list->IsEmpty()) return NULL;
     return list->RemoveFront();
-}
-
-void SJFQueue::Push(Thread* thread) {
-    list->Append(thread);
-    DEBUG(dbgScheduler, "[A] Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L1");
-}
-
-void PriorityQueue::Push(Thread* thread) {
-    list->Append(thread);
-    DEBUG(dbgScheduler, "[A] Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L2");
-}
-
-void RRQueue::Push(Thread* thread) {
-    list->Append(thread);
-    DEBUG(dbgScheduler, "[A] Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L3");
 }
