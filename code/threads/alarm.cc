@@ -49,5 +49,6 @@ void Alarm::CallBack() {
 
     if (status != IdleMode) {
         interrupt->YieldOnReturn();
+        kernel->scheduler->ElevateThreads();
     }
 }

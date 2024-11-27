@@ -105,8 +105,15 @@ class Thread {
     char *getName() { return (name); }
 
     int getID() { return (ID); }
+    int getPriority() { return priority; }
+    void setPriority(int value) { priority = value; }
+    void UpdatePriority();
+    int getSchedulerLevel() { return priority / 50; }
+    int getRunningTick();
+    int getApproRemainingTick();
     void setIsExec() { this->isExec = true; }
     bool getIsExec() { return (isExec); }
+    void StartRunning();
     void Print() { cout << name; }
     void SelfTest();  // test whether thread impl is working
 
@@ -119,6 +126,9 @@ class Thread {
     ThreadStatus status;  // ready, running or blocked
     char *name;
     int ID;
+    int priority;
+    int priorityUptTick;
+    int startRunningTick, approBurstTick;
     bool isExec;  // Is this thread an user executable thread
     void StackAllocate(VoidFunctionPtr func, void *arg);
     // Allocate a stack for thread.

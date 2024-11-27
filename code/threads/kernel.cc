@@ -52,6 +52,13 @@ Kernel::Kernel(int argc, char **argv) {
             debugUserProg = TRUE;
         } else if (strcmp(argv[i], "-e") == 0) {
             execfile[++execfileNum] = argv[++i];
+            execfilePriority[execfileNum] = 99; // So that all execfiles will execute sequentially.
+            
+            cout << execfile[execfileNum] << "\n";
+        } else if (strcmp(argv[i], "-ep") == 0) {
+            execfile[++execfileNum] = argv[++i];
+            execfilePriority[execfileNum] = atoi(argv[++i]);
+            
             cout << execfile[execfileNum] << "\n";
         } else if (strcmp(argv[i], "-ee") == 0) {
             // Added by @dasbd72
@@ -283,14 +290,15 @@ void Kernel::ReleasePage(int physPageID) {
 
 void Kernel::ExecAll() {
     for (int i = 1; i <= execfileNum; i++) {
-        int a = Exec(execfile[i]);
+        int a = Exec(execfile[i], execfilePriority[i]);
     }
     currentThread->Finish();
     // Kernel::Exec();
 }
 
-int Kernel::Exec(char *name) {
+int Kernel::Exec(char *name, int priority) {
     t[threadNum] = new Thread(name, threadNum);
+    t[threadNum]->setPriority(priority);
     t[threadNum]->setIsExec();
     t[threadNum]->space = new AddrSpace();
     t[threadNum]->Fork((VoidFunctionPtr)&ForkExecute, (void *)t[threadNum]);

@@ -247,6 +247,10 @@ void Thread::Sleep(bool finishing) {
     DEBUG(dbgTraCode, "In Thread::Sleep, Sleeping thread: " << name << ", " << kernel->stats->totalTicks);
 
     status = BLOCKED;
+    int temp = approBurstTick;
+    approBurstTick = 0.5 * approBurstTick + 0.5 * (kernel->stats->totalTicks - startRunningTick);
+    DEBUG(dbgScheduler, "[D] Tick " << kernel->stats->totalTicks << ": Thread " << ID << " update approximate burst time, from: " << temp << " to " << approBurstTick);
+
     // cout << "debug Thread::Sleep " << name << "wait for Idle\n";
     while ((nextThread = kernel->scheduler->FindNextToRun()) == NULL) {
         kernel->interrupt->Idle();  // no one to run, wait for an interrupt
@@ -405,6 +409,38 @@ SimpleThread(int which) {
         cout << "*** thread " << which << " looped " << num << " times\n";
         kernel->currentThread->Yield();
     }
+}
+
+void Thread::UpdatePriority() {
+    if (kernel->stats->totalTicks - priorityUptTick >= 1500) {
+        priorityUptTick = kernel->stats->totalTicks;
+
+        int prevPriority = priority;
+        if (priority <= 10) {
+            priority = 0;
+        } else {
+            priority -= 10;
+        }
+        
+        DEBUG(dbgScheduler, "[C] Tick " << kernel->stats->totalTicks << ": Thread " << ID << " changes its priority from " << prevPriority << " to " << priority);
+
+        if (prevPriority / 50 != getSchedulerLevel()) {
+            kernel->scheduler->UpdateThreadLevel(this);
+        }
+    }
+}
+
+int Thread::getRunningTick() {
+    return kernel->stats->totalTicks - startRunningTick;
+}
+
+int Thread::getApproRemainingTick() {
+    return approBurstTick - (kernel->stats->totalTicks - startRunningTick);
+}
+
+void Thread::StartRunning() {
+    startRunningTick = kernel->stats->totalTicks; 
+    priorityUptTick = kernel->stats->totalTicks; 
 }
 
 //----------------------------------------------------------------------
