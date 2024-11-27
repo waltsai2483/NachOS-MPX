@@ -84,19 +84,19 @@ Scheduler::FindNextToRun() {
     ASSERT(kernel->interrupt->getLevel() == IntOff);
 
     Thread* t;
-    if ((t = readyL1.RemoveBest()) != NULL) {
+    if ((t = readyL1.RemoveBest()) != NULL) { // L1 Queue CAN preempt
         DEBUG(dbgScheduler, "[B] Tick " << kernel->stats->totalTicks << ": Thread " << t->getID() << " is removed from queue L1");
         return t;
     }
 
-    if (kernel->currentThread)
+    if (kernel->currentThread->getSchedulerLevel() <= 1 && kernel->currentThread->getStatus() == RUNNING) return NULL; // L2 Queue cannot preempt another L2
 
     if ((t = readyL2.RemoveBest()) != NULL) {
         DEBUG(dbgScheduler, "[B] Tick " << kernel->stats->totalTicks << ": Thread " << t->getID() << " is removed from queue L2");
         return t;
     }
     
-    if ((t = readyL3.RemoveBest()) != NULL) {
+    if ((t = readyL3.RemoveBest()) != NULL) { // Round-Robin CAN preempt
         DEBUG(dbgScheduler, "[B] Tick " << kernel->stats->totalTicks << ": Thread " << t->getID() << " is removed from queue L3");
         return t;
     }
