@@ -76,6 +76,17 @@ enum ThreadStatus { JUST_CREATED,
 
 class Thread {
    private:
+    class Status {
+       public:
+        Status(Thread *t, ThreadStatus st) : thread(t), status(status) {}
+
+        ThreadStatus getStatus() { return status; }
+        ThreadStatus setStatus(ThreadStatus st);
+       private:
+        Thread *thread;
+        ThreadStatus status;
+    };
+
     // NOTE: DO NOT CHANGE the order of these first two members.
     // THEY MUST be in this position for SWITCH to work.
     int *stackTop;                         // the current stack pointer
@@ -101,7 +112,7 @@ class Thread {
 
     void CheckOverflow();  // Check if thread stack has overflowed
     void setStatus(ThreadStatus st);
-    ThreadStatus getStatus() { return (status); }
+    ThreadStatus getStatus() { return status.getStatus(); }
     char *getName() { return (name); }
 
     int getID() { return (ID); }
@@ -123,7 +134,7 @@ class Thread {
     int *stack;           // Bottom of the stack
                           // NULL if this is the main thread
                           // (If NULL, don't deallocate stack)
-    ThreadStatus status;  // ready, running or blocked
+    Status status;  // ready, running or blocked
     char *name;
     int ID;
     int priority;

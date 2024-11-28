@@ -34,13 +34,12 @@ const int STACK_FENCEPOST = 0xdedbeef;
 //	"threadName" is an arbitrary string, useful for debugging.
 //----------------------------------------------------------------------
 
-Thread::Thread(char *threadName, int threadID) {
+Thread::Thread(char *threadName, int threadID) : status(this, JUST_CREATED) {
     ID = threadID;
     name = threadName;
     isExec = false;
     stackTop = NULL;
     stack = NULL;
-    status = JUST_CREATED;
     for (int i = 0; i < MachineStateSize; i++) {
         machineState[i] = NULL;  // not strictly necessary, since
                                  // new thread ignores contents
@@ -246,7 +245,7 @@ void Thread::Sleep(bool finishing) {
     DEBUG(dbgThread, "Sleeping thread: " << name);
     DEBUG(dbgTraCode, "In Thread::Sleep, Sleeping thread: " << name << ", " << kernel->stats->totalTicks);
 
-    status = BLOCKED;
+    status.setStatus(BLOCKED);
     int temp = approBurstTick;
     approBurstTick = 0.5 * approBurstTick + 0.5 * (kernel->stats->totalTicks - startRunningTick);
     DEBUG(dbgScheduler, "[D] Tick " << kernel->stats->totalTicks << ": Thread " << ID << " update approximate burst time, from: " << temp << " to " << approBurstTick);
@@ -440,12 +439,18 @@ void Thread::SelfTest() {
 }
 
 void Thread::setStatus(ThreadStatus st) {
+    status.setStatus(st);
+}
+
+ThreadStatus Thread::Status::setStatus(ThreadStatus st) {
     status = st;
     switch (st) {
         case READY:
-            priorityUptTick = kernel->stats->totalTicks;
+            thread->priorityUptTick = kernel->stats->totalTicks;
             break;
         default:
             break;
     }
+    return st;
 }
+
