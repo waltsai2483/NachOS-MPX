@@ -18,7 +18,6 @@
 // thread is running, and which threads are ready but not running.
 
 class JobQueue {
-   friend class Scheduler;
    public:
    JobQueue() { list = new List<Thread*>; }
    ~JobQueue() { delete list; }
@@ -27,6 +26,8 @@ class JobQueue {
    void Remove(Thread *thread) { list->Remove(thread); }
    bool IsEmpty() { return list->IsEmpty(); }
    bool IsInList(Thread *thread) { return list->IsInList(thread); }
+   void Apply(void (*f)(Thread *)) const { list->Apply(f); }
+
    protected:
    List<Thread*>* list;
 };
@@ -55,7 +56,7 @@ class Scheduler {
     // Thread can be dispatched.
     Thread* FindNextToRun();  // Dequeue first thread on the ready
                               // list, if any, and return thread.
-    void UpdateThreadLevel(Thread* thread);
+    void UpgradeThreadLevel(Thread* thread);
     void ElevateThreads();
     void Run(Thread* nextThread, bool finishing);
     // Cause nextThread to start running
@@ -63,9 +64,16 @@ class Scheduler {
                                 // running needs to be deleted
     void Print();               // Print contents of ready list
 
+    static void Aging(Thread *thread);
+
     // SelfTest for scheduler is implemented in class Thread
 
    private:
+    static const int AGING_PERIOD = 1500;
+    static const int AGING_FACTOR = 10;
+
+    int ScheduleLevel(int priority);
+
     SJFQueue readyL1;
     PriorityQueue readyL2;
     RRQueue readyL3;

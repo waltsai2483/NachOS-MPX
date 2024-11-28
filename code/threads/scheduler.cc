@@ -23,6 +23,7 @@
 #include "copyright.h"
 #include "debug.h"
 #include "main.h"
+#include "utility.h"
 
 //----------------------------------------------------------------------
 // Scheduler::Scheduler
@@ -88,7 +89,7 @@ Scheduler::FindNextToRun() {
         return t;
     }
 
-    if (kernel->currentThread->getSchedulerLevel() <= 1 && kernel->currentThread->getStatus() == RUNNING) return NULL; // L2 Queue cannot preempt another L2
+    if (ScheduleLevel(kernel->currentThread->getPriority()) <= 1 && kernel->currentThread->getStatus() == RUNNING) return NULL; // L2 Queue cannot preempt another L2
 
     if ((t = readyL2.RemoveBest()) != NULL) {
         DEBUG(dbgScheduler, "[B] Tick " << kernel->stats->totalTicks << ": Thread " << t->getID() << " is removed from queue L2");
@@ -103,29 +104,44 @@ Scheduler::FindNextToRun() {
     return NULL;
 }
 
-void Scheduler::UpdateThreadLevel(Thread* thread) {
-    if (thread->getSchedulerLevel() == 0 && readyL2.IsInList(thread)) {
+int Scheduler::ScheduleLevel(int priority) {
+    return priority / 50;
+}
+
+void Scheduler::Aging(Thread *thread) {
+    Scheduler *scheduler = kernel->scheduler;
+    if (kernel->stats->totalTicks - thread->getPriorityUptTick() >= AGING_PERIOD) {
+        thread->setPriorityUptTick(kernel->stats->totalTicks);
+
+        int prevPriority = thread->getPriority();
+        int priority = max(prevPriority - AGING_FACTOR, 0);
+        thread->setPriority(priority);
+
+        DEBUG(dbgScheduler, "[C] Tick " << kernel->stats->totalTicks
+            << ": Thread " << thread->getID() << " changes its priority from "
+            << prevPriority << " to " << priority);
+
+        if (scheduler->ScheduleLevel(prevPriority) != scheduler->ScheduleLevel(priority))
+            scheduler->UpgradeThreadLevel(thread);
+    }
+}
+
+void Scheduler::UpgradeThreadLevel(Thread* thread) {
+    // FIXME: hard code the queue to remove
+    int lv = ScheduleLevel(thread->getPriority());
+    if (lv == 0) {
         readyL2.Remove(thread);
         readyL1.Push(thread);
-    } else if (thread->getSchedulerLevel() == 1 && readyL3.IsInList(thread)) {
+    } else if (lv == 1) {
         readyL3.Remove(thread);
         readyL2.Push(thread);
     }
 }
 
 void Scheduler::ElevateThreads() {
-    ListIterator<Thread*> iter1(readyL1.list);
-    for (; !iter1.IsDone(); iter1.Next()) {
-        iter1.Item()->UpdatePriority();
-    }
-    ListIterator<Thread*> iter2(readyL2.list);
-    for (; !iter2.IsDone(); iter2.Next()) {
-        iter2.Item()->UpdatePriority();
-    }
-    ListIterator<Thread*> iter3(readyL3.list);
-    for (; !iter3.IsDone(); iter3.Next()) {
-        iter3.Item()->UpdatePriority();
-    }
+    readyL1.Apply(Aging);
+    readyL2.Apply(Aging);
+    readyL3.Apply(Aging);
 }
 
 //----------------------------------------------------------------------
@@ -218,13 +234,12 @@ void Scheduler::CheckToBeDestroyed() {
 void Scheduler::Print() {
     cout << "Ready list contents:\n";
     cout << "\tL1 Queue: ";
-    readyL1.list->Apply(ThreadPrint);
+    readyL1.Apply(ThreadPrint);
     cout << "\tL2 Queue: ";
-    readyL2.list->Apply(ThreadPrint);
+    readyL2.Apply(ThreadPrint);
     cout << "\tL3 Queue: ";
-    readyL3.list->Apply(ThreadPrint);
+    readyL3.Apply(ThreadPrint);
 }
-
 
 Thread* SJFQueue::RemoveBest() {
     if (list->IsEmpty()) return NULL;

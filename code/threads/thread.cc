@@ -411,25 +411,6 @@ SimpleThread(int which) {
     }
 }
 
-void Thread::UpdatePriority() {
-    if (kernel->stats->totalTicks - priorityUptTick >= 1500) {
-        priorityUptTick = kernel->stats->totalTicks;
-
-        int prevPriority = priority;
-        if (priority <= 10) {
-            priority = 0;
-        } else {
-            priority -= 10;
-        }
-        
-        DEBUG(dbgScheduler, "[C] Tick " << kernel->stats->totalTicks << ": Thread " << ID << " changes its priority from " << prevPriority << " to " << priority);
-
-        if (prevPriority / 50 != getSchedulerLevel()) {
-            kernel->scheduler->UpdateThreadLevel(this);
-        }
-    }
-}
-
 int Thread::getRunningTick() {
     return kernel->stats->totalTicks - startRunningTick;
 }

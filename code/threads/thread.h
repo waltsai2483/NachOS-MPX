@@ -107,8 +107,8 @@ class Thread {
     int getID() { return (ID); }
     int getPriority() { return priority; }
     void setPriority(int value) { priority = value; }
-    void UpdatePriority();
-    int getSchedulerLevel() { return priority / 50; }
+    int getPriorityUptTick() { return priorityUptTick; }
+    void setPriorityUptTick(int value) { priorityUptTick = value; }
     int getRunningTick();
     int getApproRemainingTick();
     void setIsExec() { this->isExec = true; }
