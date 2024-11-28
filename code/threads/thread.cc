@@ -421,7 +421,6 @@ int Thread::getApproRemainingTick() {
 
 void Thread::StartRunning() {
     startRunningTick = kernel->stats->totalTicks; 
-    priorityUptTick = kernel->stats->totalTicks; 
 }
 
 //----------------------------------------------------------------------
@@ -438,4 +437,15 @@ void Thread::SelfTest() {
     t->Fork((VoidFunctionPtr)SimpleThread, (void *)1);
     kernel->currentThread->Yield();
     SimpleThread(0);
+}
+
+void Thread::setStatus(ThreadStatus st) {
+    status = st;
+    switch (st) {
+        case READY:
+            priorityUptTick = kernel->stats->totalTicks;
+            break;
+        default:
+            break;
+    }
 }

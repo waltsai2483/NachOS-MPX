@@ -100,7 +100,7 @@ class Thread {
     void Finish();               // The thread is done executing
 
     void CheckOverflow();  // Check if thread stack has overflowed
-    void setStatus(ThreadStatus st) { status = st; }
+    void setStatus(ThreadStatus st);
     ThreadStatus getStatus() { return (status); }
     char *getName() { return (name); }
 
