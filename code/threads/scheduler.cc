@@ -31,7 +31,11 @@
 //	Initially, no ready threads.
 //----------------------------------------------------------------------
 
-Scheduler::Scheduler() {
+Scheduler::Scheduler() : priorityIntervalSize(4) {
+    priorityInterval[0] = 0;
+    priorityInterval[1] = 50;
+    priorityInterval[2] = 100;
+    priorityInterval[3] = 150;
     toBeDestroyed = NULL;
 }
 
@@ -56,16 +60,14 @@ void Scheduler::ReadyToRun(Thread *thread) {
     DEBUG(dbgThread, "Putting thread on ready list: " << thread->getName() << " (" << thread->getID() << ")");
     // cout << "Putting thread on ready list: " << thread->getName() << endl ;
     thread->setStatus(READY);
-    if (thread->getPriority() <= 49) {
-        if (readyL1.IsInList(thread)) readyL1.Remove(thread);
+    int lv = ScheduleLevel(thread->getPriority());
+    if (lv == READYL1_LEVEL) {
         readyL1.Push(thread);
         DEBUG(dbgScheduler, "[A] Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L1");
-    } else if (thread->getPriority() <= 99) {
-        if (readyL2.IsInList(thread)) readyL2.Remove(thread);
+    } else if (lv == READYL2_LEVEL) {
         readyL2.Push(thread);
         DEBUG(dbgScheduler, "[A] Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L2");
-    } else if (thread->getPriority() <= 149) {
-        if (readyL3.IsInList(thread)) readyL3.Remove(thread);
+    } else if (lv == READYL3_LEVEL) {
         readyL3.Push(thread);
         DEBUG(dbgScheduler, "[A] Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L3");
     }
@@ -89,7 +91,7 @@ Scheduler::FindNextToRun() {
         return t;
     }
 
-    if (ScheduleLevel(kernel->currentThread->getPriority()) <= 1 && kernel->currentThread->getStatus() == RUNNING) return NULL; // L2 Queue cannot preempt another L2
+    if (ScheduleLevel(kernel->currentThread->getPriority()) >= READYL2_LEVEL && kernel->currentThread->getStatus() == RUNNING) return NULL; // L2 Queue cannot preempt another L2
 
     if ((t = readyL2.RemoveBest()) != NULL) {
         DEBUG(dbgScheduler, "[B] Tick " << kernel->stats->totalTicks << ": Thread " << t->getID() << " is removed from queue L2");
@@ -105,7 +107,15 @@ Scheduler::FindNextToRun() {
 }
 
 int Scheduler::ScheduleLevel(int priority) {
-    return priority / 50;
+    ASSERT(priority >= priorityInterval[0] &&
+           priority < priorityInterval[priorityIntervalSize - 1]);
+
+    int i = 0;
+    for (; i < priorityIntervalSize; ++i) {
+        if (priorityInterval[i] > priority)
+            break;
+    }
+    return i - 1;
 }
 
 void Scheduler::Aging(Thread *thread) {
@@ -113,8 +123,9 @@ void Scheduler::Aging(Thread *thread) {
     if (kernel->stats->totalTicks - thread->getPriorityUptTick() >= AGING_PERIOD) {
         thread->setPriorityUptTick(kernel->stats->totalTicks);
 
+        int cap = scheduler->priorityInterval[scheduler->priorityIntervalSize - 1] - 1;
         int prevPriority = thread->getPriority();
-        int priority = max(prevPriority - AGING_FACTOR, 0);
+        int priority = min(prevPriority + AGING_FACTOR, cap);
         thread->setPriority(priority);
 
         DEBUG(dbgScheduler, "[C] Tick " << kernel->stats->totalTicks
@@ -129,10 +140,10 @@ void Scheduler::Aging(Thread *thread) {
 void Scheduler::UpgradeThreadLevel(Thread* thread) {
     // FIXME: hard code the queue to remove
     int lv = ScheduleLevel(thread->getPriority());
-    if (lv == 0) {
+    if (lv == READYL1_LEVEL) {
         readyL2.Remove(thread);
         readyL1.Push(thread);
-    } else if (lv == 1) {
+    } else if (lv == READYL2_LEVEL) {
         readyL3.Remove(thread);
         readyL2.Push(thread);
     }
@@ -260,7 +271,7 @@ Thread* PriorityQueue::RemoveBest() {
     ListIterator<Thread*> iter(list);
     Thread *best = NULL;
     while (!iter.IsDone()) {
-        if (best == NULL || iter.Item()->getPriority() < best->getPriority() || iter.Item()->getPriority() == best->getPriority() && iter.Item()->getID() < best->getID()) {
+        if (best == NULL || iter.Item()->getPriority() > best->getPriority() || iter.Item()->getPriority() == best->getPriority() && iter.Item()->getID() < best->getID()) {
             best = iter.Item();
         }
         iter.Next();

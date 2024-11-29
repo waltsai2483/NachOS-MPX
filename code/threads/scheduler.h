@@ -71,9 +71,14 @@ class Scheduler {
    private:
     static const int AGING_PERIOD = 1500;
     static const int AGING_FACTOR = 10;
+    static const int READYL1_LEVEL = 2;
+    static const int READYL2_LEVEL = 1;
+    static const int READYL3_LEVEL = 0;
 
     int ScheduleLevel(int priority);
 
+    int priorityInterval[4];
+    int priorityIntervalSize;
     SJFQueue readyL1;
     PriorityQueue readyL2;
     RRQueue readyL3;
