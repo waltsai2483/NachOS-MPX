@@ -21,9 +21,9 @@ class JobQueue {
    public:
    JobQueue() { list = new List<Thread*>; }
    ~JobQueue() { delete list; }
-   virtual void Push(Thread* thread) { list->Append(thread); }
+   void Push(Thread* thread);
    virtual Thread* RemoveBest() = 0;
-   void Remove(Thread *thread) { list->Remove(thread); }
+   void Remove(Thread *thread);
    bool IsEmpty() { return list->IsEmpty(); }
    bool IsInList(Thread *thread) { return list->IsInList(thread); }
    void Apply(void (*f)(Thread *)) const { list->Apply(f); }
@@ -63,6 +63,7 @@ class Scheduler {
     void CheckToBeDestroyed();  // Check if thread that had been
                                 // running needs to be deleted
     void Print();               // Print contents of ready list
+    const char *QueueName(JobQueue *q);
 
     static void Aging(Thread *thread);
 

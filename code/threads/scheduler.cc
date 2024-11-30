@@ -63,13 +63,10 @@ void Scheduler::ReadyToRun(Thread *thread) {
     int lv = ScheduleLevel(thread->getPriority());
     if (lv == READYL1_LEVEL) {
         readyL1.Push(thread);
-        DEBUG(dbgScheduler, "[A] Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L1");
     } else if (lv == READYL2_LEVEL) {
         readyL2.Push(thread);
-        DEBUG(dbgScheduler, "[A] Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L2");
     } else if (lv == READYL3_LEVEL) {
         readyL3.Push(thread);
-        DEBUG(dbgScheduler, "[A] Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L3");
     }
 }
 
@@ -87,19 +84,16 @@ Scheduler::FindNextToRun() {
 
     Thread* t;
     if ((t = readyL1.RemoveBest()) != NULL) { // L1 Queue CAN preempt
-        DEBUG(dbgScheduler, "[B] Tick " << kernel->stats->totalTicks << ": Thread " << t->getID() << " is removed from queue L1");
         return t;
     }
 
     if (ScheduleLevel(kernel->currentThread->getPriority()) >= READYL2_LEVEL && kernel->currentThread->getStatus() == RUNNING) return NULL; // L2 Queue cannot preempt another L2
 
     if ((t = readyL2.RemoveBest()) != NULL) {
-        DEBUG(dbgScheduler, "[B] Tick " << kernel->stats->totalTicks << ": Thread " << t->getID() << " is removed from queue L2");
         return t;
     }
     
     if ((t = readyL3.RemoveBest()) != NULL) { // Round-Robin CAN preempt
-        DEBUG(dbgScheduler, "[B] Tick " << kernel->stats->totalTicks << ": Thread " << t->getID() << " is removed from queue L3");
         return t;
     }
 
@@ -153,6 +147,18 @@ void Scheduler::ElevateThreads() {
     readyL1.Apply(Aging);
     readyL2.Apply(Aging);
     readyL3.Apply(Aging);
+}
+
+const char *Scheduler::QueueName(JobQueue *q) {
+    if (q == &readyL1) {
+        return "L1";
+    } else if (q == &readyL2) {
+        return "L2";
+    } else if (q == &readyL3) {
+        return "L3";
+    } else {
+        ASSERT(false);
+    }
 }
 
 //----------------------------------------------------------------------
@@ -252,6 +258,20 @@ void Scheduler::Print() {
     readyL3.Apply(ThreadPrint);
 }
 
+void JobQueue::Push(Thread* thread) {
+    const char *name = kernel->scheduler->QueueName(this);
+    DEBUG(dbgScheduler, "[A] Tick " << kernel->stats->totalTicks << ": Thread " <<
+          thread->getID() << " is inserted into queue " << name);
+    list->Append(thread);
+}
+
+void JobQueue::Remove(Thread *thread) {
+    const char *name = kernel->scheduler->QueueName(this);
+    DEBUG(dbgScheduler, "[B] Tick " << kernel->stats->totalTicks << ": Thread " <<
+          thread->getID() << " is removed from queue " << name);
+    list->Remove(thread);
+}
+
 Thread* SJFQueue::RemoveBest() {
     if (list->IsEmpty()) return NULL;
     ListIterator<Thread*> iter(list);
@@ -262,7 +282,7 @@ Thread* SJFQueue::RemoveBest() {
         }
         iter.Next();
     }
-    list->Remove(best);
+    Remove(best);
     return best;
 }
 
@@ -276,11 +296,13 @@ Thread* PriorityQueue::RemoveBest() {
         }
         iter.Next();
     }
-    list->Remove(best);
+    Remove(best);
     return best;
 }
 
 Thread* RRQueue::RemoveBest() {
     if (list->IsEmpty()) return NULL;
-    return list->RemoveFront();
+    Thread *t = list->Front();
+    Remove(t);
+    return t;
 }
