@@ -49,6 +49,10 @@ class RRQueue: public JobQueue {
 
 class Scheduler {
    public:
+    static const int READYL1_LEVEL = 2;
+    static const int READYL2_LEVEL = 1;
+    static const int READYL3_LEVEL = 0;
+
     Scheduler();   // Initialize list of ready threads
     ~Scheduler();  // De-allocate ready list
 
@@ -64,6 +68,7 @@ class Scheduler {
                                 // running needs to be deleted
     void Print();               // Print contents of ready list
     const char *QueueName(JobQueue *q);
+    int ScheduleLevel(int priority);
 
     static void Aging(Thread *thread);
 
@@ -72,11 +77,6 @@ class Scheduler {
    private:
     static const int AGING_PERIOD = 1500;
     static const int AGING_FACTOR = 10;
-    static const int READYL1_LEVEL = 2;
-    static const int READYL2_LEVEL = 1;
-    static const int READYL3_LEVEL = 0;
-
-    int ScheduleLevel(int priority);
 
     int priorityInterval[4];
     int priorityIntervalSize;

@@ -107,9 +107,9 @@ void Kernel::Initialize() {
     // object to save its state.
 
     currentThread = new Thread("main", threadNum++);
-    currentThread->setStatus(RUNNING);
 
     stats = new Statistics();        // collect statistics
+    currentThread->setStatus(RUNNING);
     interrupt = new Interrupt;       // start up interrupt handling
     scheduler = new Scheduler();     // initialize the ready queue
     alarm = new Alarm(randomSlice);  // start up time slicing

@@ -87,7 +87,12 @@ Scheduler::FindNextToRun() {
         return t;
     }
 
-    if (ScheduleLevel(kernel->currentThread->getPriority()) >= READYL2_LEVEL && kernel->currentThread->getStatus() == RUNNING) return NULL; // L2 Queue cannot preempt another L2
+    // handled cases are:
+    //   * running L1 thread is prior to ready L2/L3 thread
+    //   * running L2 thread is prior to ready L2/L3 thread
+    if (ScheduleLevel(kernel->currentThread->getPriority()) >= READYL2_LEVEL &&
+        kernel->currentThread->getStatus() == RUNNING)
+        return NULL;
 
     if ((t = readyL2.RemoveBest()) != NULL) {
         return t;
@@ -206,8 +211,6 @@ void Scheduler::Run(Thread *nextThread, bool finishing) {
     // a bit to figure out what happens after this, both from the point
     // of view of the thread and from the perspective of the "outside world".
 
-    nextThread->StartRunning(); // Update start running tick of the thread
-                                // in order to calculate CPU burst later
     DEBUG(dbgScheduler, "[E] Tick " << kernel->stats->totalTicks << ": Thread " << nextThread->getID() << " is now selected for execution, thread " << oldThread->getID() << " is replaced, and it has executed " << oldThread->getRunningTick() << " ticks")
     SWITCH(oldThread, nextThread);
 
@@ -277,11 +280,22 @@ Thread* SJFQueue::RemoveBest() {
     ListIterator<Thread*> iter(list);
     Thread *best = NULL;
     while (!iter.IsDone()) {
-        if (best == NULL || iter.Item()->getApproRemainingTick() < best->getApproRemainingTick() || iter.Item()->getApproRemainingTick() == best->getApproRemainingTick() && iter.Item()->getID() < best->getID()) {
+        if (best == NULL || iter.Item()->getApproBurstTick() < best->getApproBurstTick() || iter.Item()->getApproBurstTick() == best->getApproBurstTick() && iter.Item()->getID() < best->getID()) {
             best = iter.Item();
         }
         iter.Next();
     }
+
+    Thread *curr = kernel->currentThread;
+    int lv = kernel->scheduler->ScheduleLevel(curr->getPriority());
+    if (lv == Scheduler::READYL1_LEVEL && curr->getStatus() == RUNNING) {
+        double curr_tick = curr->getApproRemainingTick();
+        double best_tick = best->getApproBurstTick();
+        if (curr_tick < best_tick ||
+            (curr_tick == best_tick && curr->getID() < best->getID()))
+            return NULL;
+    }
+
     Remove(best);
     return best;
 }

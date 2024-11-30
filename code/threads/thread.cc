@@ -34,7 +34,8 @@ const int STACK_FENCEPOST = 0xdedbeef;
 //	"threadName" is an arbitrary string, useful for debugging.
 //----------------------------------------------------------------------
 
-Thread::Thread(char *threadName, int threadID) : status(this, JUST_CREATED) {
+Thread::Thread(char *threadName, int threadID)
+      : status(this, JUST_CREATED), accumRunningTick(0), approBurstTick(0.0) {
     ID = threadID;
     name = threadName;
     isExec = false;
@@ -246,9 +247,6 @@ void Thread::Sleep(bool finishing) {
     DEBUG(dbgTraCode, "In Thread::Sleep, Sleeping thread: " << name << ", " << kernel->stats->totalTicks);
 
     status.setStatus(BLOCKED);
-    int temp = approBurstTick;
-    approBurstTick = 0.5 * approBurstTick + 0.5 * (kernel->stats->totalTicks - startRunningTick);
-    DEBUG(dbgScheduler, "[D] Tick " << kernel->stats->totalTicks << ": Thread " << ID << " update approximate burst time, from: " << temp << " to " << approBurstTick);
 
     // cout << "debug Thread::Sleep " << name << "wait for Idle\n";
     while ((nextThread = kernel->scheduler->FindNextToRun()) == NULL) {
@@ -414,12 +412,8 @@ int Thread::getRunningTick() {
     return kernel->stats->totalTicks - startRunningTick;
 }
 
-int Thread::getApproRemainingTick() {
-    return approBurstTick - (kernel->stats->totalTicks - startRunningTick);
-}
-
-void Thread::StartRunning() {
-    startRunningTick = kernel->stats->totalTicks; 
+double Thread::getApproRemainingTick() {
+    return approBurstTick - (accumRunningTick + getRunningTick());
 }
 
 //----------------------------------------------------------------------
@@ -443,14 +437,31 @@ void Thread::setStatus(ThreadStatus st) {
 }
 
 ThreadStatus Thread::Status::setStatus(ThreadStatus st) {
-    status = st;
     switch (st) {
         case READY:
             thread->priorityUptTick = kernel->stats->totalTicks;
+            if (status == RUNNING) {
+                thread->accumRunningTick += thread->getRunningTick();
+            }
             break;
+        case RUNNING:
+            thread->startRunningTick = kernel->stats->totalTicks;
+            break;
+        case BLOCKED: {
+            double temp = thread->approBurstTick;
+            int total = thread->accumRunningTick + thread->getRunningTick();
+            thread->approBurstTick = 0.5 * temp + 0.5 * total;
+            DEBUG(dbgScheduler, "[D] Tick " << kernel->stats->totalTicks <<
+                  ": Thread " << thread->ID << " update approximate burst time,"
+                  " from: " << temp << ", add " << total << ", to " <<
+                  thread->approBurstTick);
+            thread->accumRunningTick = 0;
+            break;
+        }
         default:
             break;
     }
+    status = st;
     return st;
 }
 

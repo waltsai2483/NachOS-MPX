@@ -121,10 +121,10 @@ class Thread {
     int getPriorityUptTick() { return priorityUptTick; }
     void setPriorityUptTick(int value) { priorityUptTick = value; }
     int getRunningTick();
-    int getApproRemainingTick();
+    double getApproRemainingTick();
+    double getApproBurstTick() { return approBurstTick; }
     void setIsExec() { this->isExec = true; }
     bool getIsExec() { return (isExec); }
-    void StartRunning();
     void Print() { cout << name; }
     void SelfTest();  // test whether thread impl is working
 
@@ -139,7 +139,8 @@ class Thread {
     int ID;
     int priority;
     int priorityUptTick;
-    int startRunningTick, approBurstTick;
+    int startRunningTick, accumRunningTick;
+    double approBurstTick;
     bool isExec;  // Is this thread an user executable thread
     void StackAllocate(VoidFunctionPtr func, void *arg);
     // Allocate a stack for thread.
