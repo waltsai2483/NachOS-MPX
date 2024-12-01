@@ -35,7 +35,8 @@ const int STACK_FENCEPOST = 0xdedbeef;
 //----------------------------------------------------------------------
 
 Thread::Thread(char *threadName, int threadID)
-      : status(this, JUST_CREATED), accumRunningTick(0), approBurstTick(0.0) {
+      : status(this, JUST_CREATED), accumRunningTick(0), approBurstTick(0.0),
+        resetAccumTick(false) {
     ID = threadID;
     name = threadName;
     isExec = false;
@@ -409,6 +410,8 @@ SimpleThread(int which) {
 }
 
 int Thread::getRunningTick() {
+    // to prevent blocked thread using this method
+    ASSERT(status.getStatus() == RUNNING);
     return kernel->stats->totalTicks - startRunningTick;
 }
 
@@ -449,13 +452,13 @@ ThreadStatus Thread::Status::setStatus(ThreadStatus st) {
             break;
         case BLOCKED: {
             double temp = thread->approBurstTick;
-            int total = thread->accumRunningTick + thread->getRunningTick();
-            thread->approBurstTick = 0.5 * temp + 0.5 * total;
-            DEBUG(dbgScheduler, "[D] Tick " << kernel->stats->totalTicks <<
-                  ": Thread " << thread->ID << " update approximate burst time,"
-                  " from: " << temp << ", add " << total << ", to " <<
-                  thread->approBurstTick);
-            thread->accumRunningTick = 0;
+            thread->accumRunningTick += thread->getRunningTick();
+            thread->approBurstTick = 0.5 * temp + 0.5 * thread->accumRunningTick;
+            DEBUG(dbgScheduler, "[D] Tick [" << kernel->stats->totalTicks <<
+                  "]: Thread [" << thread->ID << "] update approximate burst time,"
+                  " from: [" << temp << "], add [" << thread->accumRunningTick <<
+                  "], to [" << thread->approBurstTick << "]");
+            thread->resetAccumTick = true;
             break;
         }
         default:

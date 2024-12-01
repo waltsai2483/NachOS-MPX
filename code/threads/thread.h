@@ -123,6 +123,8 @@ class Thread {
     int getRunningTick();
     double getApproRemainingTick();
     double getApproBurstTick() { return approBurstTick; }
+    int &AccumRunningTick() { return accumRunningTick; }
+    bool &ResetAccumTick() { return resetAccumTick; }
     void setIsExec() { this->isExec = true; }
     bool getIsExec() { return (isExec); }
     void Print() { cout << name; }
@@ -140,6 +142,7 @@ class Thread {
     int priority;
     int priorityUptTick;
     int startRunningTick, accumRunningTick;
+    bool resetAccumTick;
     double approBurstTick;
     bool isExec;  // Is this thread an user executable thread
     void StackAllocate(VoidFunctionPtr func, void *arg);

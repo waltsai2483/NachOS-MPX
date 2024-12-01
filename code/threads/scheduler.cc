@@ -127,9 +127,9 @@ void Scheduler::Aging(Thread *thread) {
         int priority = min(prevPriority + AGING_FACTOR, cap);
         thread->setPriority(priority);
 
-        DEBUG(dbgScheduler, "[C] Tick " << kernel->stats->totalTicks
-            << ": Thread " << thread->getID() << " changes its priority from "
-            << prevPriority << " to " << priority);
+        DEBUG(dbgScheduler, "[C] Tick [" << kernel->stats->totalTicks
+            << "]: Thread [" << thread->getID() << "] changes its priority from ["
+            << prevPriority << "] to [" << priority << "]");
 
         if (scheduler->ScheduleLevel(prevPriority) != scheduler->ScheduleLevel(priority))
             scheduler->UpgradeThreadLevel(thread);
@@ -156,11 +156,11 @@ void Scheduler::ElevateThreads() {
 
 const char *Scheduler::QueueName(JobQueue *q) {
     if (q == &readyL1) {
-        return "L1";
+        return "L[1]";
     } else if (q == &readyL2) {
-        return "L2";
+        return "L[2]";
     } else if (q == &readyL3) {
-        return "L3";
+        return "L[3]";
     } else {
         ASSERT(false);
     }
@@ -211,7 +211,16 @@ void Scheduler::Run(Thread *nextThread, bool finishing) {
     // a bit to figure out what happens after this, both from the point
     // of view of the thread and from the perspective of the "outside world".
 
-    DEBUG(dbgScheduler, "[E] Tick " << kernel->stats->totalTicks << ": Thread " << nextThread->getID() << " is now selected for execution, thread " << oldThread->getID() << " is replaced, and it has executed " << oldThread->getRunningTick() << " ticks")
+    int &tick = oldThread->AccumRunningTick();
+    bool &flag = oldThread->ResetAccumTick();
+    DEBUG(dbgScheduler, "[E] Tick [" << kernel->stats->totalTicks << "]: Thread [" <<
+          nextThread->getID() << "] is now selected for execution, thread [" <<
+          oldThread->getID() << "] is replaced, and it has executed [" <<
+          tick << "] ticks");
+    if (flag) {
+        flag = false;
+        tick = 0;
+    }
     SWITCH(oldThread, nextThread);
 
     // we're back, running oldThread
@@ -263,15 +272,15 @@ void Scheduler::Print() {
 
 void JobQueue::Push(Thread* thread) {
     const char *name = kernel->scheduler->QueueName(this);
-    DEBUG(dbgScheduler, "[A] Tick " << kernel->stats->totalTicks << ": Thread " <<
-          thread->getID() << " is inserted into queue " << name);
+    DEBUG(dbgScheduler, "[A] Tick [" << kernel->stats->totalTicks << "]: Thread [" <<
+          thread->getID() << "] is inserted into queue " << name);
     list->Append(thread);
 }
 
 void JobQueue::Remove(Thread *thread) {
     const char *name = kernel->scheduler->QueueName(this);
-    DEBUG(dbgScheduler, "[B] Tick " << kernel->stats->totalTicks << ": Thread " <<
-          thread->getID() << " is removed from queue " << name);
+    DEBUG(dbgScheduler, "[B] Tick [" << kernel->stats->totalTicks << "]: Thread [" <<
+          thread->getID() << "] is removed from queue " << name);
     list->Remove(thread);
 }
 
