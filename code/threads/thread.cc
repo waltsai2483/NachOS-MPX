@@ -34,13 +34,14 @@ const int STACK_FENCEPOST = 0xdedbeef;
 //	"threadName" is an arbitrary string, useful for debugging.
 //----------------------------------------------------------------------
 
-Thread::Thread(char *threadName, int threadID) {
+Thread::Thread(char *threadName, int threadID)
+      : status(this, JUST_CREATED), accumRunningTick(0), approBurstTick(0.0),
+        resetAccumTick(false) {
     ID = threadID;
     name = threadName;
     isExec = false;
     stackTop = NULL;
     stack = NULL;
-    status = JUST_CREATED;
     for (int i = 0; i < MachineStateSize; i++) {
         machineState[i] = NULL;  // not strictly necessary, since
                                  // new thread ignores contents
@@ -246,10 +247,7 @@ void Thread::Sleep(bool finishing) {
     DEBUG(dbgThread, "Sleeping thread: " << name);
     DEBUG(dbgTraCode, "In Thread::Sleep, Sleeping thread: " << name << ", " << kernel->stats->totalTicks);
 
-    status = BLOCKED;
-    int temp = approBurstTick;
-    approBurstTick = 0.5 * approBurstTick + 0.5 * (kernel->stats->totalTicks - startRunningTick);
-    DEBUG(dbgScheduler, "[D] Tick " << kernel->stats->totalTicks << ": Thread " << ID << " update approximate burst time, from: " << temp << " to " << approBurstTick);
+    status.setStatus(BLOCKED);
 
     // cout << "debug Thread::Sleep " << name << "wait for Idle\n";
     while ((nextThread = kernel->scheduler->FindNextToRun()) == NULL) {
@@ -411,36 +409,14 @@ SimpleThread(int which) {
     }
 }
 
-void Thread::UpdatePriority() {
-    if (kernel->stats->totalTicks - priorityUptTick >= 1500) {
-        priorityUptTick = kernel->stats->totalTicks;
-
-        int prevPriority = priority;
-        if (priority <= 10) {
-            priority = 0;
-        } else {
-            priority -= 10;
-        }
-        
-        DEBUG(dbgScheduler, "[C] Tick " << kernel->stats->totalTicks << ": Thread " << ID << " changes its priority from " << prevPriority << " to " << priority);
-
-        if (prevPriority / 50 != getSchedulerLevel()) {
-            kernel->scheduler->UpdateThreadLevel(this);
-        }
-    }
-}
-
 int Thread::getRunningTick() {
+    // to prevent blocked thread using this method
+    ASSERT(status.getStatus() == RUNNING);
     return kernel->stats->totalTicks - startRunningTick;
 }
 
-int Thread::getApproRemainingTick() {
-    return approBurstTick - (kernel->stats->totalTicks - startRunningTick);
-}
-
-void Thread::StartRunning() {
-    startRunningTick = kernel->stats->totalTicks; 
-    priorityUptTick = kernel->stats->totalTicks; 
+double Thread::getApproRemainingTick() {
+    return approBurstTick - (accumRunningTick + getRunningTick());
 }
 
 //----------------------------------------------------------------------
@@ -458,3 +434,37 @@ void Thread::SelfTest() {
     kernel->currentThread->Yield();
     SimpleThread(0);
 }
+
+void Thread::setStatus(ThreadStatus st) {
+    status.setStatus(st);
+}
+
+ThreadStatus Thread::Status::setStatus(ThreadStatus st) {
+    switch (st) {
+        case READY:
+            thread->priorityUptTick = kernel->stats->totalTicks;
+            if (status == RUNNING) {
+                thread->accumRunningTick += thread->getRunningTick();
+            }
+            break;
+        case RUNNING:
+            thread->startRunningTick = kernel->stats->totalTicks;
+            break;
+        case BLOCKED: {
+            double temp = thread->approBurstTick;
+            thread->accumRunningTick += thread->getRunningTick();
+            thread->approBurstTick = 0.5 * temp + 0.5 * thread->accumRunningTick;
+            DEBUG(dbgScheduler, "[D] Tick [" << kernel->stats->totalTicks <<
+                  "]: Thread [" << thread->ID << "] update approximate burst time,"
+                  " from: [" << temp << "], add [" << thread->accumRunningTick <<
+                  "], to [" << thread->approBurstTick << "]");
+            thread->resetAccumTick = true;
+            break;
+        }
+        default:
+            break;
+    }
+    status = st;
+    return st;
+}
+

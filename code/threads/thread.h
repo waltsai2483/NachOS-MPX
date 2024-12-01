@@ -76,6 +76,17 @@ enum ThreadStatus { JUST_CREATED,
 
 class Thread {
    private:
+    class Status {
+       public:
+        Status(Thread *t, ThreadStatus st) : thread(t), status(status) {}
+
+        ThreadStatus getStatus() { return status; }
+        ThreadStatus setStatus(ThreadStatus st);
+       private:
+        Thread *thread;
+        ThreadStatus status;
+    };
+
     // NOTE: DO NOT CHANGE the order of these first two members.
     // THEY MUST be in this position for SWITCH to work.
     int *stackTop;                         // the current stack pointer
@@ -100,20 +111,22 @@ class Thread {
     void Finish();               // The thread is done executing
 
     void CheckOverflow();  // Check if thread stack has overflowed
-    void setStatus(ThreadStatus st) { status = st; }
-    ThreadStatus getStatus() { return (status); }
+    void setStatus(ThreadStatus st);
+    ThreadStatus getStatus() { return status.getStatus(); }
     char *getName() { return (name); }
 
     int getID() { return (ID); }
     int getPriority() { return priority; }
     void setPriority(int value) { priority = value; }
-    void UpdatePriority();
-    int getSchedulerLevel() { return priority / 50; }
+    int getPriorityUptTick() { return priorityUptTick; }
+    void setPriorityUptTick(int value) { priorityUptTick = value; }
     int getRunningTick();
-    int getApproRemainingTick();
+    double getApproRemainingTick();
+    double getApproBurstTick() { return approBurstTick; }
+    int &AccumRunningTick() { return accumRunningTick; }
+    bool &ResetAccumTick() { return resetAccumTick; }
     void setIsExec() { this->isExec = true; }
     bool getIsExec() { return (isExec); }
-    void StartRunning();
     void Print() { cout << name; }
     void SelfTest();  // test whether thread impl is working
 
@@ -123,12 +136,14 @@ class Thread {
     int *stack;           // Bottom of the stack
                           // NULL if this is the main thread
                           // (If NULL, don't deallocate stack)
-    ThreadStatus status;  // ready, running or blocked
+    Status status;  // ready, running or blocked
     char *name;
     int ID;
     int priority;
     int priorityUptTick;
-    int startRunningTick, approBurstTick;
+    int startRunningTick, accumRunningTick;
+    bool resetAccumTick;
+    double approBurstTick;
     bool isExec;  // Is this thread an user executable thread
     void StackAllocate(VoidFunctionPtr func, void *arg);
     // Allocate a stack for thread.
