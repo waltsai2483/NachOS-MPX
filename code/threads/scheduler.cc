@@ -211,16 +211,11 @@ void Scheduler::Run(Thread *nextThread, bool finishing) {
     // a bit to figure out what happens after this, both from the point
     // of view of the thread and from the perspective of the "outside world".
 
-    int &tick = oldThread->AccumRunningTick();
-    bool &flag = oldThread->ResetAccumTick();
+    int tick = oldThread->getAccumTickWithResetCheck();
     DEBUG(dbgScheduler, "[E] Tick [" << kernel->stats->totalTicks << "]: Thread [" <<
           nextThread->getID() << "] is now selected for execution, thread [" <<
           oldThread->getID() << "] is replaced, and it has executed [" <<
           tick << "] ticks");
-    if (flag) {
-        flag = false;
-        tick = 0;
-    }
     SWITCH(oldThread, nextThread);
 
     // we're back, running oldThread
