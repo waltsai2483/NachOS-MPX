@@ -123,8 +123,14 @@ class Thread {
     int getRunningTick();
     double getApproRemainingTick();
     double getApproBurstTick() { return approBurstTick; }
-    int &AccumRunningTick() { return accumRunningTick; }
-    bool &ResetAccumTick() { return resetAccumTick; }
+    int getAccumTickWithResetCheck() {
+        int ret = accumRunningTick;
+        if (resetAccumTick) {
+            resetAccumTick = false;
+            accumRunningTick = 0;
+        }
+        return ret;
+    }
     void setIsExec() { this->isExec = true; }
     bool getIsExec() { return (isExec); }
     void Print() { cout << name; }
